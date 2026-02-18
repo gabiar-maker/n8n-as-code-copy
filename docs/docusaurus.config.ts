@@ -58,6 +58,23 @@ const config: Config = {
     ],
   ],
 
+  themes: [
+    '@docusaurus/theme-mermaid',
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        hashed: true,
+        indexDocs: true,
+        indexBlog: false,
+        indexPages: false,
+        language: ['en'],
+        highlightSearchTermsOnTargetPage: true,
+        explicitSearchResultPath: true,
+        docsRouteBasePath: '/docs',
+      },
+    ],
+  ],
+
   plugins: [
     // Temporarily disabled API plugin due to TypeDoc markdown ID issues
     // [
@@ -73,7 +90,6 @@ const config: Config = {
     //     breadcrumbs: true,
     //   },
     // ],
-    '@docusaurus/theme-mermaid',
   ],
 
   themeConfig: {
@@ -165,12 +181,13 @@ const config: Config = {
       },
     },
     breadcrumbs: true,
-    algolia: {
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_SEARCH_API_KEY',
-      indexName: 'n8n-as-code',
-      contextualSearch: true,
-    },
+    // Algolia search disabled - not configured yet
+    // algolia: {
+    //   appId: 'YOUR_APP_ID',
+    //   apiKey: 'YOUR_SEARCH_API_KEY',
+    //   indexName: 'n8n-as-code',
+    //   contextualSearch: true,
+    // },
     metadata: [
       { name: 'keywords', content: 'n8n, workflow, automation, version control, git, vs code, cli' },
       { name: 'twitter:card', content: 'summary_large_image' },

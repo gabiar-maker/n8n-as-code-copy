@@ -1,10 +1,10 @@
 ---
-id: skills-index
-title: Agent-cli Package
+id: skills/index
+title: Skills Package
 sidebar_label: Overview
 ---
 
-# Agent-cli Package
+# Skills Package
 
 AI agent tools for n8n workflows
 

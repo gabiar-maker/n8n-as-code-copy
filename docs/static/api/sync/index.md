@@ -1,5 +1,5 @@
 ---
-id: sync-index
+id: sync/index
 title: Sync Package
 sidebar_label: Overview
 ---

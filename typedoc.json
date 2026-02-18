@@ -2,7 +2,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["packages/*"],
   "entryPointStrategy": "packages",
-  "out": "docs/api",
+  "out": "docs/build/api",
   "name": "n8n-as-code API Reference",
   "includeVersion": true,
   "categorizeByGroup": true,

@@ -431,18 +431,18 @@ Start = {};
 
 ## API Reference
 
-See [Transformer API Documentation](./api/modules.html) for complete API details.
-
-### Key Classes
-- `JsonToAstParser` - Parse JSON to AST
-- `AstToTypeScriptGenerator` - Generate TypeScript from AST
-- `TypeScriptParser` - Parse TypeScript to AST
-- `WorkflowBuilder` - Build n8n JSON from AST
+The transformer package provides the following key components:
 
 ### Decorators
-- `@workflow(metadata)` - Define workflow
-- `@node(config)` - Define node
-- `@links()` - Define connections
+- `@workflow(metadata)` - Define workflow metadata (id, name, active, etc.)
+- `@node(config)` - Define a workflow node with type and configuration
+- `@links()` - Define connections between nodes
+
+### Core Classes
+- `JsonToAstParser` - Parse JSON workflows to AST representation
+- `AstToTypeScriptGenerator` - Generate TypeScript code from AST
+- `TypeScriptParser` - Parse TypeScript workflows to AST
+- `WorkflowBuilder` - Build n8n JSON from AST representation
 
 ## Support
 

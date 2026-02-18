@@ -86,4 +86,4 @@ If you have questions about the API or need assistance, please:
 
 ---
 
-*Last updated: 2026-01-13*
+*Last updated: 2026-02-18*

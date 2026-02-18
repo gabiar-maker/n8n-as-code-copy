@@ -9,7 +9,7 @@ description: Welcome to n8n-as-code documentation - Manage your n8n workflows as
 **n8n-as-code** is an ecosystem designed to manage your n8n workflows as code. It transforms your automations into synchronized local files (JSON or TypeScript), enabling version control (Git), AI-assisted editing, and seamless integration into VS Code.
 
 :::tip TypeScript Workflows (New!)
-Transform your workflows into type-safe, readable TypeScript with decorators! [Learn more →](./usage/typescript-workflows)
+Transform your workflows into type-safe, readable TypeScript with decorators! [Learn more →](/docs/usage/typescript-workflows)
 :::
 
 ## 🚀 What is n8n-as-code?
