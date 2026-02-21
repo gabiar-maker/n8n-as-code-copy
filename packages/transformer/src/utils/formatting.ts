@@ -7,13 +7,15 @@
  * - Code structure formatting
  */
 
-import * as prettier from 'prettier';
-
 /**
- * Format TypeScript code with Prettier
+ * Format TypeScript code with Prettier.
+ * Prettier is loaded lazily so that environments where it is not installed
+ * (e.g. the VS Code extension bundle) can still load this module without
+ * crashing at require-time.
  */
 export async function formatTypeScript(code: string): Promise<string> {
     try {
+        const prettier = await import('prettier');
         return await prettier.format(code, {
             parser: 'typescript',
             singleQuote: true,
