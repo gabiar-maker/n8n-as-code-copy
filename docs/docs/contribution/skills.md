@@ -185,7 +185,7 @@ The VS Code extension can use the Skills CLI programmatically to:
 3. Update rule files when n8n version changes
 
 ### Main CLI
-The main CLI's `init-ai` command uses the Skills CLI internally to:
+The main CLI's `update-ai` command (`init-ai` is a backward-compatible alias) uses the Skills CLI internally to:
 ```bash
 n8nac update-ai
 ```

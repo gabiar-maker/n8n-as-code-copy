@@ -280,7 +280,8 @@ n8nac-skills workflows install 123 -o my-workflow.workflow.ts --typescript
 **Option 1: Manual conversion via CLI**
 1. Pull your existing workflows (if not already local)
    ```bash
-   n8nac pull
+   n8nac list  # See what's available
+   n8nac pull --workflowsid <workflowId>  # Pull each workflow you need
    ```
 
 2. Convert workflows to TypeScript

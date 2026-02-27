@@ -22,19 +22,25 @@ The CLI package (`@n8n-as-code/cli`) provides a command-line interface for manag
 ```
 packages/cli/
 ├── src/
-│   ├── index.ts              # CLI entry point
+│   ├── index.ts              # CLI entry point (registers all commands)
 │   ├── commands/
 │   │   ├── base.ts           # Base command class
 │   │   ├── init.ts           # Init command
-│   │   ├── init-ai.ts        # AI-assisted init
+│   │   ├── init-ai.ts        # UpdateAiCommand (init-ai is a backward-compat alias)
 │   │   ├── list.ts           # List command
-│   │   └── sync.ts           # Sync command (pull/push/fetch/resolve)
+│   │   ├── switch.ts         # Switch project command
+│   │   ├── convert.ts        # Convert command (JSON ↔ TypeScript)
+│   │   └── sync.ts           # Sync command (pull / push / fetch / resolve)
+│   ├── core/
+│   │   ├── types.ts          # WorkflowSyncStatus enum, interfaces
+│   │   ├── sync-manager.ts   # Core sync engine
+│   │   └── ...               # API client, services
 │   └── services/
 │       └── config-service.ts # Configuration management
 ├── bin/
 │   └── n8n-as-code.js        # CLI executable
 ├── package.json              # Package manifest
-└── tsconfig.json            # TypeScript configuration
+└── tsconfig.json             # TypeScript configuration
 ```
 
 ### Command Hierarchy
@@ -42,14 +48,19 @@ packages/cli/
 graph TD
     A[n8n-as-code CLI] --> B[BaseCommand]
     B --> C[InitCommand]
-    B --> D[InitAICommand]
+    B --> D[UpdateAiCommand]
     B --> E[SyncCommand]
     B --> F[ListCommand]
+    B --> G[SwitchCommand]
+    B --> H[ConvertCommand]
     
-    C --> G[CLI Core / Sync Engine]
-    D --> H[AI Services]
-    E --> G
-    F --> G
+    D --> |init-ai alias| D
+    C --> I[CLI Core / Sync Engine]
+    E --> |pull/push/fetch/resolve| I
+    F --> I
+    G --> I
+    D --> J[AI Services]
+    H --> K[@n8n-as-code/transformer]
     
     style A fill:#ff6b35
     style B fill:#3498db
@@ -180,14 +191,18 @@ Shows current sync status of all workflows.
 - Display color-coded status table
 - Support `--local` / `--remote` filters for focused views
 
-### 6. **Init AI Command (`commands/init-ai.ts`)**
-AI-assisted project initialization.
+### 6. **Update AI Command (`commands/init-ai.ts`)**
+Regenerates AI context files for the project.
 
 **Key Responsibilities:**
-- Generate configuration using AI
-- Suggest workflow templates
-- Provide intelligent defaults
-- Learn from user preferences
+- Generate `AGENTS.md` with n8n-specific AI agent instructions
+- Generate `.vscode/n8n.code-snippets` from the n8n node index
+- Generate editor rule files (`.cursorrules`, `.clinerules`, `.windsurfrules`)
+- Optionally connect to n8n to embed the running instance version
+
+:::note
+The class `UpdateAiCommand` registers the `update-ai` command. `InitAiCommand` extends it as a backward-compatible alias for `init-ai`.
+:::
 
 ### 7. **Config Service (`services/config-service.ts`)**
 Manages CLI configuration.

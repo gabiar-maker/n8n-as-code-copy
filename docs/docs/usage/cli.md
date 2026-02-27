@@ -37,25 +37,25 @@ This command:
 2. Configures connection to your n8n instance
 3. Prompts you to select which **n8n project** to sync
 
-### Download Workflows from n8n
+### Download a Workflow from n8n
 ```bash
-n8nac pull
+n8nac pull --workflowsid <workflowId>
 ```
 
 This command:
-1. Pulls all workflows from n8n
-2. Saves them to the local `workflows` directory
-3. Organizes them by instance
+1. Fetches the specified workflow from n8n
+2. Saves it to the local `workflows` directory
+3. Refuses to overwrite if a conflict is detected (use `n8nac resolve` in that case)
 
-### Upload Local Workflows to n8n
+### Upload a Local Workflow to n8n
 ```bash
-n8nac push
+n8nac push --workflowsid <workflowId>
 ```
 
 This command:
-1. Uploads new or modified workflows to n8n
-2. Creates workflows that exist locally but not in n8n
-3. Updates existing workflows with local changes
+1. Uploads the specified workflow to n8n
+2. Uses Optimistic Concurrency Control — rejected if the remote was modified since last pull
+3. Suggests `n8nac resolve` if a conflict is detected
 
 ## 📋 Command Reference
 
@@ -83,7 +83,7 @@ Switch to a different n8n project.
 n8nac switch
 ```
 
-After switching projects, run `n8nac pull` to download workflows from the selected project.
+After switching projects, use `n8nac list` to see the workflows in the new project, then `n8nac pull --workflowsid <workflowId>` for each workflow you want to download.
 
 ### `list`
 Display all workflows with their current sync status.
@@ -93,13 +93,15 @@ Shows a color-coded table of all workflows with their sync status, helping you u
 
 **Options:**
 - `--local`: Show only workflows that exist locally (including `EXIST_ONLY_LOCALLY`, `MODIFIED_LOCALLY`, `TRACKED`, `CONFLICT`)
-- `--remote`: Show only workflows that exist remotely (including `EXIST_ONLY_REMOTELY`, `TRACKED`, `CONFLICT`)
+- `--remote` / `--distant`: Show only workflows that exist remotely (including `EXIST_ONLY_REMOTELY`, `TRACKED`, `CONFLICT`)
+- `--raw`: Output raw JSON for scripting/automation
 
 **Example:**
 ```bash
 n8nac list                    # Show all workflows
-n8nac list --local           # Show only local workflows
-n8nac list --remote          # Show only remote workflows
+n8nac list --local            # Show only local workflows
+n8nac list --remote           # Show only remote workflows
+n8nac list --raw              # Output raw JSON
 ```
 
 **Output:**
@@ -115,93 +117,143 @@ n8nac list --remote          # Show only remote workflows
 - `EXIST_ONLY_REMOTELY` - Remote workflow not yet pulled locally
 
 ### `pull`
-Download workflows from n8n to local directory.
+Download a specific workflow from n8n to the local directory.
 
 **Description:**
-Downloads workflows from your configured n8n instance. Detects conflicts when both local and remote have changed since last sync.
+Downloads a single workflow from your configured n8n instance. Detects and blocks on conflicts — use `n8nac resolve` when a conflict is reported.
 
 **Options:**
-- `--force`: Skip conflict checks and overwrite local files with remote versions
+- `--workflowsid <workflowId>` (**required**): The ID of the workflow to pull
 
 **Example:**
 ```bash
-n8nac pull
-n8nac pull --force  # Force overwrite local changes
+n8nac pull --workflowsid abc123
 ```
 
 **Behavior:**
-1. Refreshes workflow status using 3-way merge detection
-2. Pulls new and modified workflows from n8n
-3. For conflicts, prompts interactively to:
-   - Keep local version (force push)
-   - Keep remote version (force pull)
-   - Show diff
-   - Skip
-4. Creates automatic backups before overwriting files
+1. Fetches the latest remote state for the workflow
+2. Checks for conflict (`CONFLICT`) or uncommitted local edits (`MODIFIED_LOCALLY`)
+3. Aborts with instructions if a conflict or local change is detected (use `n8nac resolve` to proceed)
+4. Downloads and writes the workflow file on success
 
 ### `push`
-Upload local workflows to n8n.
+Upload a local workflow to n8n.
 
 **Description:**
-Uploads workflows that exist locally to n8n. Detects conflicts when both local and remote have changed since last sync.
+Uploads a single workflow from local to your n8n instance. Uses Optimistic Concurrency Control (OCC) — the push is rejected if the remote was modified since the last pull.
 
 **Options:**
-- `--force`: Skip conflict checks and overwrite remote workflows with local versions
+- `--workflowsid <workflowId>` (**required for existing workflows**): The ID of the workflow to push
+- `--filename <name>`: Push a brand-new local workflow file that has no remote ID yet
 
 **Example:**
 ```bash
-n8nac push
-n8nac push --force  # Force overwrite remote changes
+n8nac push --workflowsid abc123          # Push an existing workflow
+n8nac push --filename my-workflow.workflow.ts  # Push a brand-new local file
 ```
 
 **Behavior:**
-1. Refreshes workflow status using 3-way merge detection
-2. Pushes new and modified workflows to n8n
-3. For conflicts, prompts interactively to:
-   - Keep local version (force push)
-   - Keep remote version (force pull)
-   - Show diff
-   - Skip
-4. Updates `.n8n-state.json` after successful operations
+1. Fetches the current remote state for the workflow
+2. Checks for conflict — if remote was modified since last sync, aborts with instructions
+3. Uploads the local workflow on success
+4. Reports the `n8nac resolve` commands to use if a conflict is detected
 
 ### `fetch`
-Update remote state cache for a specific workflow.
+Update the remote state cache for a specific workflow.
 
 **Description:**
-Fetches the latest remote state for a specific workflow without performing any sync operations. This updates the local cache of remote workflow versions, which helps you see accurate status in `n8nac list` before deciding to pull or push.
+Fetches the latest remote metadata for a specific workflow without downloading the file. This updates the internal comparison cache so `n8nac list` shows an accurate status before you decide to pull or push.
 
-**Arguments:**
-- `<workflowId>`: Required workflow ID to fetch
+**Options:**
+- `--workflowsid <workflowId>` (**required**): The ID of the workflow to fetch
 
 **Example:**
 ```bash
-n8nac fetch abc123          # Fetch remote state for workflow abc123
+n8nac fetch --workflowsid abc123
 ```
 
 **Use Cases:**
 - Before running `n8nac list` to get accurate status for a specific workflow
-- After making remote changes in n8n UI to update local cache for that workflow
+- After making changes in the n8n UI to update the local cache for that workflow
 - As a lightweight check for remote changes without downloading files
 
-### `init-ai`
-Initialize AI Context (AGENTS.md, rule files, code snippets).
+### `resolve`
+Force-resolve a sync conflict for a specific workflow.
 
 **Description:**
-Generates context files that help AI coding assistants understand n8n workflow structure and best practices.
+When `n8nac pull` or `n8nac push` reports a conflict, use this command to choose which version wins. No merging — one side overwrites the other.
 
 **Options:**
-- `--doc-only`: Generate only documentation, skip schema and snippets
+- `--workflowsid <workflowId>` (**required**): The ID of the conflicting workflow
+- `--mode <keep-current|keep-incoming>` (**required**): Resolution strategy
+  - `keep-current`: Keep the **local** version (force-push it to n8n)
+  - `keep-incoming`: Keep the **remote** version (force-pull it locally)
 
 **Example:**
 ```bash
-n8nac init-ai
+n8nac resolve --workflowsid abc123 --mode keep-current   # Force-push local
+n8nac resolve --workflowsid abc123 --mode keep-incoming  # Force-pull remote
 ```
 
-**Creates:**
+### `update-ai`
+Update AI Context (AGENTS.md, rule files, code snippets).
+
+**Description:**
+Regenerates context files that help AI coding assistants (GitHub Copilot, Cursor, Cline, Windsurf…) understand n8n workflow structure and best practices. The command fetches the installed n8n version to tailor the output.
+
+:::note
+`n8nac init-ai` is kept as a backward-compatible alias for `n8nac update-ai`.
+:::
+
+**Example:**
+```bash
+n8nac update-ai
+```
+
+**Creates / updates:**
 - `AGENTS.md`: Instructions for AI assistants on n8n workflow development
-- `.vscode/n8n.code-snippets`: Code snippets for VS Code autocomplete (generated from n8n-nodes-index.json)
-- `.vscode/n8n.code-snippets`: Code snippets for common n8n node patterns
-- `.cursorrules` / `.clinerules`: AI agent rule files
+- `.vscode/n8n.code-snippets`: Code completion snippets for VS Code
+- `.cursorrules` / `.clinerules` / `.windsurfrules`: AI agent rule files
+
+### `convert`
+Convert a single workflow file between JSON and TypeScript formats.
+
+**Description:**
+Converts a `.json` workflow export to a `.workflow.ts` file (or vice-versa). The target format is auto-detected from the source extension unless `--format` is provided.
+
+**Arguments:**
+- `<file>` (**required**): Path to the source file
+
+**Options:**
+- `-o, --output <path>`: Output file path (auto-generated if omitted)
+- `-f, --force`: Overwrite output file if it already exists
+- `--format <json|typescript>`: Override the auto-detected target format
+
+**Example:**
+```bash
+n8nac convert my-workflow.json                         # JSON → TypeScript
+n8nac convert my-workflow.workflow.ts                  # TypeScript → JSON
+n8nac convert my-workflow.json -o out.workflow.ts -f   # JSON → TS, force overwrite
+```
+
+### `convert-batch`
+Batch-convert all workflow files in a directory.
+
+**Description:**
+Converts every workflow file in the specified directory to the target format.
+
+**Arguments:**
+- `<directory>` (**required**): Path to the directory containing workflow files
+
+**Options:**
+- `--format <json|typescript>` (**required**): Target format for all files
+- `-f, --force`: Overwrite existing output files
+
+**Example:**
+```bash
+n8nac convert-batch ./workflows --format typescript    # Convert all JSON to TS
+n8nac convert-batch ./workflows --format json          # Convert all TS to JSON
+```
 
 ## ⚙️ Configuration
 
@@ -230,11 +282,11 @@ n8nac init
 # 2. List workflows to see current status
 n8nac list
 
-# 3. Fetch remote state to update status
-n8nac fetch --all
+# 3. Fetch remote state to update status for a specific workflow
+n8nac fetch --workflowsid abc123
 
-# 4. Pull remote changes you want
-n8nac pull --id abc123
+# 4. Pull remote changes for a specific workflow
+n8nac pull --workflowsid abc123
 
 # 5. Edit workflow files locally
 #    (edit workflows/*.workflow.ts files)
@@ -243,17 +295,28 @@ n8nac pull --id abc123
 n8nac list
 
 # 7. Push local changes to n8n
-n8nac push --id abc123
+n8nac push --workflowsid abc123
 ```
 
 ### Git-like Development Pattern
 ```bash
-# Git-like workflow management
-n8nac list                    # See what's changed
-n8nac fetch abc123           # Update remote state for specific workflow
-n8nac pull --id abc123       # Pull remote changes
+# See what's changed
+n8nac list
+
+# Update remote state cache for a specific workflow
+n8nac fetch --workflowsid abc123
+
+# Pull remote changes for that workflow
+n8nac pull --workflowsid abc123
+
 # ... edit workflow ...
-n8nac push --id abc123       # Push local changes
+
+# Push local changes back to n8n
+n8nac push --workflowsid abc123
+
+# Resolve a conflict (if push/pull is blocked)
+n8nac resolve --workflowsid abc123 --mode keep-current   # keep local
+n8nac resolve --workflowsid abc123 --mode keep-incoming  # keep remote
 
 # View local-only or remote-only workflows
 n8nac list --local           # Show only local workflows
@@ -279,7 +342,7 @@ cp -r workflows/* "$BACKUP_DIR/" 2>/dev/null || true
 
 # Or pull fresh copy to backup directory
 # (Run in a separate folder if you want backups isolated)
-# cd "$BACKUP_DIR" && n8nac pull
+# cd "$BACKUP_DIR" && n8nac init && n8nac pull --workflowsid <workflowId>
 
 # Compress backup
 tar -czf "$BACKUP_DIR.tar.gz" "$BACKUP_DIR"
@@ -299,8 +362,9 @@ export N8N_API_KEY="$STAGING_API_KEY"
 # Initialize with environment variables
 n8nac init
 
-# Pull workflows from staging
-n8nac pull
+# List workflows and pull specific ones from staging
+n8nac list
+n8nac pull --workflowsid <workflowId>
 
 # (Make any necessary transformations)
 
@@ -309,7 +373,7 @@ if [ "$DEPLOY_TO_PROD" = "true" ]; then
   export N8N_HOST="https://prod.n8n.example.com"
   export N8N_API_KEY="$PROD_API_KEY"
   n8nac init
-  n8nac push
+  n8nac push --workflowsid <workflowId>
 fi
 ```
 
@@ -328,7 +392,7 @@ for workflow in workflows/*.json; do
 done
 
 # Push changes to n8n
-n8nac push
+n8nac push --workflowsid <workflowId>
 ```
 
 ## 🎯 Best Practices
@@ -388,14 +452,17 @@ chmod -R 755 workflows/
 # Check workflow status
 n8nac list
 
-# Fetch remote state to update cache
-n8nac fetch <workflowId>
+# Fetch remote state to update cache for a specific workflow
+n8nac fetch --workflowsid <workflowId>
 
-# Pull fresh copy of a specific workflow
-n8nac pull --id <workflowId>
+# Pull a specific workflow
+n8nac pull --workflowsid <workflowId>
 
-# Push local changes
-n8nac push --id <workflowId>
+# Push local changes for a specific workflow
+n8nac push --workflowsid <workflowId>
+
+# Resolve a conflict
+n8nac resolve --workflowsid <workflowId> --mode keep-current
 ```
 
 ### Debug Mode
@@ -403,10 +470,10 @@ Enable debug logging for detailed output:
 
 ```bash
 # Debug pull operation
-DEBUG=n8n-as-code:* n8nac pull --id <workflowId>
+DEBUG=n8n-as-code:* n8nac pull --workflowsid <workflowId>
 
 # Debug specific operations
-DEBUG=axios,n8n-as-code:* n8nac push --id <workflowId>
+DEBUG=axios,n8n-as-code:* n8nac push --workflowsid <workflowId>
 ```
 
 ## 📚 Next Steps

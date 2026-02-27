@@ -137,11 +137,11 @@ cat n8nac-config.json
 
 2. **Retry Operation:**
    ```bash
-   # Pull workflows again
-   n8nac pull
+   # Retry the specific workflow operation
+   n8nac pull --workflowsid <workflowId>
    
-   # Or push workflows
-   n8nac push
+   # Or push:
+   n8nac push --workflowsid <workflowId>
    ```
 
 3. **Check File Permissions:**
@@ -204,13 +204,15 @@ cat n8nac-config.json
    - Verify the API key has proper permissions
    - Check if CORS is configured on the n8n instance
 
-### "Auto-sync not working"
-**Problem**: Changes aren't synced automatically.
+### "Sync manually after UI changes"
+**Problem**: You edited a workflow in the n8n UI and want to get those changes locally.
 
 **Solutions:**
-1. **Check Sync Mode:**
-   - Settings → n8n → Sync Mode
-   - Ensure it's set to "auto" (not "manual")
+1. **Fetch then pull the updated workflow:**
+   ```bash
+   n8nac fetch --workflowsid <workflowId>
+   n8nac pull --workflowsid <workflowId>
+   ```
 
 2. **Check File System:**
    - Verify the workflows directory exists and is writable
@@ -305,8 +307,8 @@ cat n8nac-config.json
 
 3. **Restore from n8n:**
    ```bash
-   # Pull fresh copy
-   n8nac pull
+   # Pull fresh copy of the specific workflow
+   n8nac pull --workflowsid <workflowId>
    ```
 
 ## 🔧 Configuration Issues
@@ -340,7 +342,7 @@ cat n8nac-config.json
 n8nac list
 
 # Debug a specific pull operation
-DEBUG=n8n-as-code:* n8nac pull --id <workflowId>
+DEBUG=n8n-as-code:* n8nac pull --workflowsid <workflowId>
 ```
 
 ### Check VS Code Output Panel
@@ -354,7 +356,8 @@ DEBUG=n8n-as-code:* n8nac pull --id <workflowId>
 mkdir test-case
 cd test-case
 n8nac init
-n8nac pull
+n8nac list  # See what workflows exist
+n8nac pull --workflowsid <workflowId>  # Pull the specific workflow
 ```
 
 ## 📞 Getting Help
@@ -410,8 +413,8 @@ n8nac pull
 
 3. **Work Incrementally:**
    - Fetch and pull only the specific workflows you need
-   - Use `n8nac fetch <workflowId>` to update cache for individual workflows
-   - Use `n8nac pull --id <workflowId>` to pull only what you need
+   - Use `n8nac fetch --workflowsid <workflowId>` to update cache for individual workflows
+   - Use `n8nac pull --workflowsid <workflowId>` to pull only what you need
 
 ### High Memory Usage
 **Solutions:**
@@ -443,19 +446,23 @@ rm n8nac-config.json
 
 # Reinitialize
 n8nac init
-n8nac pull
+n8nac list  # See what's available remotely
+n8nac pull --workflowsid <workflowId>  # Pull each workflow you need
 ```
 
 ### Workflow Recovery
 ```bash
-# Get fresh copy of all workflows
-n8nac pull
+# List all workflows to see what exists remotely
+n8nac list
+
+# Pull a specific workflow from n8n:
+n8nac pull --workflowsid <workflowId>
 
 # If specific workflow is missing:
 # 1. Check if it exists in n8n UI
 # 2. If deleted from n8n, restore from backup
 # 3. If local copy exists, push it back
-n8nac push
+n8nac push --workflowsid <workflowId>
 ```
 
 ---
