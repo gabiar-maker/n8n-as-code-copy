@@ -1,0 +1,75 @@
+name: Publish VS Code Extension (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to publish from (branch, tag, or SHA)
+        required: true
+        default: main
+        type: string
+      version:
+        description: Extension version to publish (e.g. 0.14.9)
+        required: true
+        type: string
+      pre_release:
+        description: Publish as pre-release
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  publish-vscode:
+    name: Publish VS Code Extension
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.pre_release && 'next' || 'prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.14'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate version format
+        run: |
+          VERSION='${{ inputs.version }}'
+          if [[ '${{ inputs.pre_release }}' != 'true' && "$VERSION" == *-* ]]; then
+            echo "❌ Stable publish requires a plain semver version (no hyphen): got '$VERSION'"
+            exit 1
+          fi
+
+      - name: Build/package/publish extension
+        env:
+          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+        run: |
+          if [[ -z "$VSCE_TOKEN" ]]; then
+            echo "❌ VSCE_TOKEN is missing in the selected environment secrets."
+            exit 1
+          fi
+
+          cd packages/vscode-extension
+          npm version '${{ inputs.version }}' --no-git-tag-version
+          npm run build
+          npx @vscode/vsce package --no-dependencies
+
+          if [[ '${{ inputs.pre_release }}' == 'true' ]]; then
+            npx @vscode/vsce publish --no-dependencies --pre-release --pat "$VSCE_TOKEN"
+          else
+            npx @vscode/vsce publish --no-dependencies --pat "$VSCE_TOKEN"
+          fi
