@@ -90,6 +90,8 @@ n8nac skills guides --list
 ### `examples` - 🌐 Search & Download Community Workflows
 Search and download workflows from the **n8nworkflows.xyz** community repository (7000+ workflows).
 
+The packaged index contains workflow metadata and source references. Workflow JSON is fetched on demand from the upstream public archive when you run `examples download`. Each workflow keeps its original upstream license.
+
 #### `examples search <query>`
 Search workflows using FlexSearch for high-relevance results.
 
@@ -128,6 +130,8 @@ n8nac skills examples list --limit 50
 **Features:**
 - 🔍 **7000+ workflows** indexed from n8nworkflows.xyz
 - ⚡ **Offline search** - FlexSearch powered, < 5ms latency
+
+Thanks to [nusquama/n8nworkflows.xyz](https://github.com/nusquama/n8nworkflows.xyz) for maintaining the public workflow archive used as the source for this index.
 - 📦 **Lightweight** - ~6MB index (~500KB compressed)
 - 🎯 **High relevance** - Smart keyword matching and ranking
 

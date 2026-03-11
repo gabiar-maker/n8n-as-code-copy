@@ -114,6 +114,14 @@ npx --yes n8nac skills validate workflow.json   # Validate before deploying
 
 Claude Code uses the same `n8nac` CLI and ships the `n8n-architect` skill through the `n8n-as-code` plugin, so natural-language workflow work and terminal automation stay aligned around the same n8n ontology.
 
+### Community Workflow Sources
+
+`n8n-as-code` ships a searchable index of public community workflow metadata and downloads the workflow JSON on demand when an agent or user explicitly requests it.
+
+The current community workflow catalog is built from [nusquama/n8nworkflows.xyz](https://github.com/nusquama/n8nworkflows.xyz). As in the upstream archive, each workflow keeps its original license and users should refer to the original workflow metadata and source page for license details. The repository structure and indexing logic in `n8n-as-code` remain licensed under [Apache 2.0](LICENSE).
+
+Thanks to the `n8nworkflows.xyz` project for maintaining the public archive that makes this search experience possible.
+
 ---
 
 ## 🔀 GitOps for n8n
@@ -271,6 +279,8 @@ Contributions welcome!
 ## 📄 License
 
 [Apache 2.0](LICENSE) — free to use, modify, and distribute.
+
+Third-party community workflow metadata and downloadable workflow files remain subject to their respective upstream licenses.
 
 ---
 
