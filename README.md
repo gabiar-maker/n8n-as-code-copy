@@ -33,6 +33,10 @@ Zero external calls. Zero latency. Zero hallucination.
 
 ---
 
+> **⚠ n8n version compatibility** — The node schema bundled with n8n-as-code is built against the **latest stable release of n8n**. For best results, keep your n8n instance up to date. Using an outdated instance may cause generated workflows to reference node type-versions not yet supported by your instance, which n8n renders as broken nodes in the canvas.
+
+---
+
 ## ⚡ Quick Start
 
 Choose the entry point that matches how you already work.
