@@ -276,7 +276,7 @@ n8nac convert-batch workflows/ --format typescript           # Bulk convert to T
 n8nac pull <id> > workflow.json && n8nac convert workflow.json --format typescript  # Pull then convert to TypeScript
 ```
 
-**Why TypeScript?** → Better diffs in Git · Type safety · IntelliSense · Much easier for AI to read & edit
+**Why TypeScript?** → Better diffs in Git · Better readability in editors · Much easier for AI to read & edit
 
 ---
 

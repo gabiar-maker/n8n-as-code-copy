@@ -5,9 +5,11 @@
 n8n-as-code now supports **TypeScript workflows** as an alternative to JSON. TypeScript workflows offer:
 
 - **Better readability** - Declarative syntax with decorators
-- **Type safety** - IntelliSense and compile-time checks
+- **Better editor ergonomics** - A cleaner authoring format for workflow structure
 - **Code review friendly** - Git diffs are easier to understand
 - **AI agent compatible** - More natural for AI to read and generate
+
+TypeScript workflows are primarily a clearer, more maintainable representation of n8n workflows. They do **not** yet provide full static typing or deep IntelliSense for every n8n node parameter.
 
 ## Workflow Format Comparison
 
