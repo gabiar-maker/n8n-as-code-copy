@@ -92,3 +92,4 @@ workflows/
 !.github/workflows/**
 .aider*
 test-results/
+.kilo/*
