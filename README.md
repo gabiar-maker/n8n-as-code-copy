@@ -18,7 +18,6 @@
 <br>
 
 <img src="res/n8n-as-code-intro.gif" alt="n8n-as-code intro" width="800">
-<img src="res/n8n-as-code.gif" alt="n8n-as-code demo" width="800">
 
 <br>
 
